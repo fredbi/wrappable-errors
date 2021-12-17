@@ -43,26 +43,6 @@ type Rootable interface {
 // This is mostly to avoid importing both and managing package aliases: wrapping
 // standard lib calls allow for a single import ( "github.com/.../errors") clause.
 
-// New wrappable error from a string
-func New(msg string) Wrappable {
-	return &wrapped{err: errors.New(msg)}
-}
-
-// NewErr wrappable error from another error
-func NewErr(err error) Wrappable {
-	return &wrapped{err: err}
-}
-
-// NewWithRoot wrappable & rootable error from a string
-func NewWithRoot(msg string) Rootable {
-	return &wrapped{err: errors.New(msg)}
-}
-
-// NewErrWithRoot wrappable & rootable error from another error
-func NewErrWithRoot(err error) Rootable {
-	return &wrapped{err: err}
-}
-
 // Is behaves like errors.Is from the standard library
 //
 // This method is only provided for this package to nicely supersede standard lib errors:
@@ -83,9 +63,9 @@ func As(err error, target interface{}) bool {
 			return true
 		}
 
-			if target == nil {
-				panic("errors: target cannot be nil")
-			}
+		if target == nil {
+			panic("errors: target cannot be nil")
+		}
 
 		// wrapped case: check topmost (might itself be a stack)
 		if wrap, ok := err.(interface{ Err() error }); ok && As(wrap.Err(), target) {
@@ -102,33 +82,6 @@ func As(err error, target interface{}) bool {
 
 		return false
 	*/
-}
-
-// Root cause of the error: returns the deepest wrapped error in the chain
-func Root(err error) error {
-	if rootable, ok := err.(Rootable); ok {
-		return rootable.Root()
-	}
-
-	last := err
-	next := errors.Unwrap(err)
-
-	for next != nil {
-		if rootable, ok := next.(Rootable); ok {
-			return rootable.Root()
-		}
-
-		last = next
-
-		if unwrapped, ok := next.(interface{ Unwrap() error }); ok {
-			next = unwrapped.Unwrap()
-		} else {
-			next = nil
-		}
-	}
-
-	return last
-
 }
 
 // Unwrap nested error.

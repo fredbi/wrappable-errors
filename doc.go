@@ -1,12 +1,12 @@
 // Package errors provide a wrappable error type.
 //
-// It is intended to use with sentinel error or type assertions on errors,
+// It is intended to use with sentinel errors or type assertions on errors,
 // e.g. using errors.Is().
 //
 // It generalizes the concept of wrapping errors already present with fmt.Errorf("... %w", err),
 // but allows to wrap typed errors with a Wrap(err error) method.
 //
-// As its simplest, this package may be used to derive errors values or types and proceed with type or value assertion on
+// As its simplest, this package may be used to derive error values or types and proceed with type or value assertion on
 // sentinel errors using Wrap() and Is() or As().
 //
 // Runtime stack trace capture is provided as an optional addon (using WithStackTrace()).

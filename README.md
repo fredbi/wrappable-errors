@@ -1,6 +1,8 @@
 # wrappable-errors
 
-Wrappable errors allow programs to handle errors as stacks.
+Wrappable errors allow programs to handle nested errors.
+
+It is largely inspired from `github.com/pkg/errors`, and may also be used as a standin for the standard library's `errors`
 
 The main difference with the standard libray error is the new method `Wrap(error)`
 which makes it easier than `fmt.Errorf("...%w")` to reason with static error values
@@ -13,3 +15,66 @@ Since `go1.13` the standard library supports extended errors, which know how to 
 `Is(error) bool` and `As(interface{}) bool`.
 
 We build on top of this major improvement with a compatible error type.
+
+## Usage
+
+### Sentinel errors
+```
+import (
+    "github.com/fredbi/wrappable-errors"
+)
+
+var (
+	// ErrMyErr1 is assumed to be an immutable var, e.g. for a package
+	ErrMyErr1 = errors.New("err1")
+)
+```
+
+### Custom error classes
+
+#### Defining a simple class of errors
+```
+import (
+    "github.com/fredbi/wrappable-errors"
+)
+
+// MyErrorType represents some abstract error type, e.g. to capture all
+// errors returned by some package.
+type MyErrorType struct {
+	Wrappable
+}
+
+newMyErr := func(msg string) *MyErrorType {
+	return &MyErrorType{Wrappable: errors.New(msg)}
+}
+
+var (
+	// ErrMyErr1 is assumed to be an immutable var, e.g. for a package
+	ErrMyErr1 = newMyErr("err1")
+)
+```
+
+#### Enriched errors
+```
+import (
+    "github.com/fredbi/wrappable-errors"
+)
+
+// MyErrorType represents some abstract error type, e.g. to capture all
+// errors returned by some package.
+type MyErrorType struct {
+	Wrappable
+
+    Code int `json:"code"`
+    Message string `json:"message"`
+}
+
+newMyErr := func(msg string) *MyErrorType {
+	return &MyErrorType{Wrappable: New(msg)}
+}
+
+var (
+	// ErrMyErr1 is assumed to be an immutable var, e.g. for a package
+	ErrMyErr1 = newMyErr("err1")
+)
+```

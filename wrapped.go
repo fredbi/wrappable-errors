@@ -8,6 +8,16 @@ import (
 
 var _ Wrappable = &wrapped{}
 
+// New wrappable error from a string
+func New(msg string) Wrappable {
+	return &wrapped{err: errors.New(msg)}
+}
+
+// NewErr wrappable error from another error
+func NewErr(err error) Wrappable {
+	return &wrapped{err: err}
+}
+
 // wrapped produces a stack of errors. It implements the Wrappable interface.
 //
 //
@@ -18,6 +28,11 @@ var _ Wrappable = &wrapped{}
 type wrapped struct {
 	err   error
 	cause error
+}
+
+type wrappedIface interface {
+	Error() string
+	isWrapped()
 }
 
 // Error implements the error interface, with plain formatting: all nested errors are printed, separated by a ":".
@@ -87,7 +102,7 @@ func (e *wrapped) Wrap(err error) Wrappable {
 	}
 }
 
-// Unwrap implements errors.Unwrap
+// Unwrap implements errors.Unwrap: its returns the nested error
 func (e wrapped) Unwrap() error {
 	if e.cause != nil {
 		return e.cause
@@ -96,6 +111,7 @@ func (e wrapped) Unwrap() error {
 	return e.err
 }
 
+// Err return the inner error
 func (e wrapped) Err() error {
 	return e.err
 }
@@ -127,11 +143,16 @@ var errorType = reflect.TypeOf((*error)(nil)).Elem()
 
 // As implements errors.As
 func (e *wrapped) As(target interface{}) bool {
-	fmt.Printf("e: %T => As(%T)\n", e, target)
-	fmt.Printf("e.err: %T => As(%T)\n", e.err, target)
-	fmt.Printf("e.cause: %T => As(%T)\n", e.cause, target)
+	return as(e, target) || as(e.err, target) || as(e.cause, target)
+}
 
-	u := reflect.TypeOf(e)
+func (e wrapped) isWrapped() {}
+
+func as(err error, target interface{}) bool {
+	if err == nil {
+		return false
+	}
+
 	v := reflect.TypeOf(target)
 	val := reflect.ValueOf(target)
 	if v.Kind() != reflect.Ptr || val.IsNil() {
@@ -143,20 +164,27 @@ func (e *wrapped) As(target interface{}) bool {
 		panic("wrappable-errors: *target must be interface or implement error")
 	}
 
-	if u.AssignableTo(targetType) {
-		val.Elem().Set(reflect.ValueOf(e))
+	u := reflect.TypeOf(err)
+	isAssignable := u.AssignableTo(v)
+
+	// now we distinguish wether we can assign the type directly or some indirection
+	if isAssignable {
+		if !val.CanSet() {
+			return false
+		}
+		val.Set(reflect.ValueOf(err))
 
 		return true
 	}
 
-	if e.err != nil {
-		if errors.As(e.err, target) {
-			return true
+	isAssignableElem := u.AssignableTo(targetType)
+	if isAssignableElem {
+		if !val.Elem().CanSet() {
+			return false
 		}
-	}
+		val.Elem().Set(reflect.ValueOf(err))
 
-	if e.cause != nil {
-		return errors.As(e.cause, target)
+		return true
 	}
 
 	return false
