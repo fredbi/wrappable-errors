@@ -1,3 +1,6 @@
+**This experimental repository is now archived**
+
+
 # wrappable-errors
 
 Wrappable errors allow programs to handle nested errors.
@@ -15,6 +18,13 @@ Since `go1.13` the standard library supports extended errors, which know how to 
 `Is(error) bool` and `As(interface{}) bool`.
 
 We build on top of this major improvement with a compatible error type.
+
+## Deprecation: moved to archive
+
+This work initially stemmed from the desire to `Wrap()` errors, not just string, into chains of errors,
+while still getting the improvements from `go1.13`.
+
+With the advent of `go1.20`, the standard library `errors` finally supports the equivalent functionality with `errors.Join()`.
 
 ## Usage
 
