@@ -18,6 +18,7 @@ type stacked struct {
 	stack []string
 }
 
+// StackTrace dumps the stack of an error
 func (s *stacked) StackTrace() {
 	// TODO
 }

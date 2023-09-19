@@ -8,12 +8,12 @@ import (
 
 var _ Wrappable = &wrapped{}
 
-// New wrappable error from a string
+// New builds a wrappable error from a string
 func New(msg string) Wrappable {
 	return &wrapped{err: errors.New(msg)}
 }
 
-// NewErr wrappable error from another error
+// NewErr builds a wrappable error from another error
 func NewErr(err error) Wrappable {
 	return &wrapped{err: err}
 }
@@ -35,7 +35,8 @@ type wrappedIface interface {
 	isWrapped()
 }
 
-// Error implements the error interface, with plain formatting: all nested errors are printed, separated by a ":".
+// Error implements the error interface, with plain formatting.
+// Nested errors are printed, separated by a ":".
 func (e wrapped) Error() string {
 	if e.cause == nil {
 		return e.err.Error()
@@ -44,7 +45,8 @@ func (e wrapped) Error() string {
 	return fmt.Sprintf("%v: %v", e.err, e.cause)
 }
 
-// Errorf wraps a nested error built from the extra message.
+// Errorf wraps a nested error built from the extra message,
+// very much like fmt.Errorf() does.
 //
 // This is a shorthand for Wrap(fmt.Errorf(format, args...)).
 func (e wrapped) Errorf(format string, args ...interface{}) Wrappable {

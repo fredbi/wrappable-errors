@@ -28,7 +28,6 @@ func Root(err error) error {
 	}
 
 	return last
-
 }
 
 // NewWithRoot wrappable & rootable error from a string
@@ -41,6 +40,7 @@ func NewErrWithRoot(err error) Rootable {
 	return &wrapped{err: err}
 }
 
+// Root returns the root cause of a wrapped error
 func (e wrapped) Root() error {
 	last := e.err
 	next := e.Unwrap()

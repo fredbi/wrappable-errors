@@ -4,20 +4,13 @@ import (
 	"errors"
 )
 
-/* TODOs(fred)
-I'd like to:
-- optionally add a stack trace
-- nice json unmarshalling
-- Formatter
-*/
-
 // Wrappable is a wrappable error.
 //
-// The particularity of this error type is that is adds a Wrap(error) Wrappable method to add new errors to a stack of errors.
+// The peculiarity of this error type is that it adds a Wrap(error) Wrappable method to add new errors to a stack of errors.
 type Wrappable interface {
 	error
 
-	// Wrap an error into another one
+	// Wrap an error inside the current one
 	Wrap(error) Wrappable
 
 	// Unwrap the inner error, like standard lib errors.Unwrap()
@@ -43,7 +36,7 @@ type Rootable interface {
 // This is mostly to avoid importing both and managing package aliases: wrapping
 // standard lib calls allow for a single import ( "github.com/.../errors") clause.
 
-// Is behaves like errors.Is from the standard library
+// Is behaves like errors.Is from the standard library.
 //
 // This method is only provided for this package to nicely supersede standard lib errors:
 // it just calls Is() from the standard library.
@@ -58,29 +51,30 @@ func Is(err, target error) bool {
 func As(err error, target interface{}) bool {
 	return errors.As(err, target)
 	/*
-		// standard lib case: types are comparable
-		if errors.As(err, target) {
-			return true
-		}
+		  TODO(fred)
+			// standard lib case: types are comparable
+			if errors.As(err, target) {
+				return true
+			}
 
-		if target == nil {
-			panic("errors: target cannot be nil")
-		}
+			if target == nil {
+				panic("errors: target cannot be nil")
+			}
 
-		// wrapped case: check topmost (might itself be a stack)
-		if wrap, ok := err.(interface{ Err() error }); ok && As(wrap.Err(), target) {
-			return true
-		}
+			// wrapped case: check topmost (might itself be a stack)
+			if wrap, ok := err.(interface{ Err() error }); ok && As(wrap.Err(), target) {
+				return true
+			}
 
-		// wrapped case: check inner error stack
-		if unwrap, ok := err.(interface {
-			error
-			Unwrap() error
-		}); ok {
-			return As(unwrap.Unwrap(), target)
-		}
+			// wrapped case: check inner error stack
+			if unwrap, ok := err.(interface {
+				error
+				Unwrap() error
+			}); ok {
+				return As(unwrap.Unwrap(), target)
+			}
 
-		return false
+			return false
 	*/
 }
 
